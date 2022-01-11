@@ -66,7 +66,6 @@ class BezierCurve {
     #startPt;
     #ctrlPts;
     #endPoint;
-    #points;
     
     /**
      * Create a box with coordinates (x,y) and 

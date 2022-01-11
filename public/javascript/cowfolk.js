@@ -1,5 +1,5 @@
 import {Box, BezierCurve, Vector2D} from './UtilityClasses.js';
-
+import {BezierFunctions} from "./BezierFunctions.js";
 
 /**
  * A class that describes a cowfriend.
@@ -167,40 +167,38 @@ class CowfolkScene {
     #frameRate
     #ascendingCowfolk = [];
     #descendingCowfolk = [];
-    #cowBox
+    #box
     #birthRate
     #maxCowfolk
     #hillCurve
     #time = new Date();
     #birthTimer = 0;
     #context
-    #millisecsPerFrame
 
-    constructor(context, box, maxCowfolk = 30, birthRate = 3000, startScene = true, frameRate = 24.0){
+    constructor(context, box, maxCowfolk = 30, birthRate = 500, startScene = true, frameRate = 24.0){
 
-        this.#cowBox = new Box(box.x,box.y,box.w,box.h);
+        this.#box = new Box(box.x,box.y,box.w,box.h);
         this.#maxCowfolk = maxCowfolk;
         this.#birthRate = birthRate;
         this.#context = context;
-        this.#millisecsPerFrame = 1000.0 / frameRate;
         this.#frameRate = frameRate;
 
         // define the hill as a bezier curve
         
-        let middleXValue = (this.#cowBox.topRight.x - this.#cowBox.topLeft.x) / 2
+        let middleXValue = (this.#box.topRight.x - this.#box.topLeft.x) / 2
         
         
-        let startPoint = Vector2D.RandomPointBetween(this.#cowBox.topLeft, this.#cowBox.bottomLeft);
-        let endPoint = Vector2D.RandomPointBetween(this.#cowBox.topRight, this.#cowBox.bottomRight)
+        let startPoint = Vector2D.RandomPointBetween(this.#box.topLeft, this.#box.bottomLeft);
+        let endPoint = Vector2D.RandomPointBetween(this.#box.topRight, this.#box.bottomRight)
         
-        let controlPointOne = new Vector2D(this.#cowBox.x + middleXValue * Math.random(), this.#cowBox.y + this.#cowBox.h * Math.random())
-        let controlPointTwo = new Vector2D(this.#cowBox.x + this.#cowBox.w - middleXValue * Math.random(), this.#cowBox.y + this.#cowBox.h * Math.random())
+        let controlPointOne = new Vector2D(this.#box.x + middleXValue * Math.random(), this.#box.y + this.#box.h * Math.random())
+        let controlPointTwo = new Vector2D(this.#box.x + this.#box.w - middleXValue * Math.random(), this.#box.y + this.#box.h * Math.random())
         
         this.#hillCurve = new BezierCurve(startPoint, controlPointOne, controlPointTwo, endPoint);
         
         
         // place the first of the cowfolk in the scene
-        this.#ascendingCowfolk.push(this.#CreateRandomCowfriend());
+        //this.#ascendingCowfolk.push(this.#CreateRandomCowfriend());
         
         this.#isRunning = startScene
         if(this.#isRunning){
@@ -232,13 +230,31 @@ class CowfolkScene {
     
         // decide the path for the cowfriend 
         // start anywhere on the bottom of the box
-        let footPoint = Vector2D.RandomPointBetween(this.#cowBox.bottomLeft, this.#cowBox.bottomRight);
+        // let startPoint = this.#box.bottomRight.Minus(new Vector2D(0,50))//Vector2D.RandomPointBetween(this.#box.bottomLeft, this.#box.bottomRight);
+        let startPoint = Vector2D.RandomPointBetween(this.#box.bottomLeft, this.#box.bottomRight);
 
-        // let targetPoint = this.#hillCurve.GetPointAt_T(Math.random());
-        let targetPoint = Vector2D.RandomPointBetween(this.#cowBox.bottomLeft, this.#cowBox.bottomRight);
+        // start with a target point on the top of the box 
+        let targetPoint = Vector2D.RandomPointBetween(this.#box.topLeft, this.#box.topRight);
+        
+        // find the closest point where the line from  start to target intersects the hill
+
+        let intersections =  BezierFunctions.computeIntersections(this.#hillCurve, {start: startPoint, end:targetPoint})
+        // let intersections =  BezierFunctions.computeIntersections(this.#hillCurve, {start: this.#box.bottomRight, end:this.#box.topLeft})
+        //console.log(intersections);
+        let t_count = 0;
+        intersections.forEach(tValue => {
+            if(tValue >= 0 && tValue <= 1){
+                targetPoint = this.#hillCurve.GetPointAt_T(tValue);
+                t_count++;
+            }
+        })
+
+        if(t_count > 1) {
+            console.log(intersections);
+        }
 
 
-        return new CowFriend(footPoint.x, footPoint.y, bodyRadius, legRadius, footAngle, targetPoint);
+        return new CowFriend(startPoint.x, startPoint.y, bodyRadius, legRadius, footAngle, targetPoint);
     }
 
     Control () {
@@ -276,18 +292,18 @@ class CowfolkScene {
     
         this.#context.save()
         
-        this.#cowBox.Clear(this.#context);
+        this.#box.Clear(this.#context);
         
         
-        this.#cowBox.Draw(this.#context);
+        this.#box.Draw(this.#context);
         this.#context.clip();
     
         // draw the sky
         this.#context.fillStyle="blue";
         this.#context.beginPath();
         this.#hillCurve.CreateCurve(this.#context);
-        this.#context.lineTo(this.#cowBox.topRight.x, this.#cowBox.topRight.y);
-        this.#context.lineTo(this.#cowBox.topLeft.x, this.#cowBox.topLeft.y);
+        this.#context.lineTo(this.#box.topRight.x, this.#box.topRight.y);
+        this.#context.lineTo(this.#box.topLeft.x, this.#box.topLeft.y);
         this.#context.fill();
     
         // draw the descending cowfolk
@@ -299,8 +315,8 @@ class CowfolkScene {
         this.#context.beginPath();
         this.#context.fillStyle="green";
         this.#hillCurve.CreateCurve(this.#context);
-        this.#context.lineTo(this.#cowBox.bottomRight.x, this.#cowBox.bottomRight.y);
-        this.#context.lineTo(this.#cowBox.bottomLeft.x, this.#cowBox.bottomLeft.y);
+        this.#context.lineTo(this.#box.bottomRight.x, this.#box.bottomRight.y);
+        this.#context.lineTo(this.#box.bottomLeft.x, this.#box.bottomLeft.y);
         this.#context.fill();
     
         // draw the climbing cowfolk
@@ -323,7 +339,7 @@ class CowfolkScene {
             // move the cowfolk and check that it reaches its target
             if( this.#ascendingCowfolk[i].MoveTowardsTarget(deltaTime))
             {
-                CrestCowFriend(this.#ascendingCowfolk[i], this.#cowBox);
+                CrestCowFriend(this.#ascendingCowfolk[i], this.#box);
                 crestingCowfolk.push(this.#ascendingCowfolk[i]);
                 this.#ascendingCowfolk.splice(i,1);
     
@@ -375,7 +391,6 @@ const CrestCowFriend = (cowfriend, cowBox) => {
 
 //    console.log(cowfriend.direction);
 }
-
 
 
 export {CowfolkScene}

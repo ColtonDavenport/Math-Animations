@@ -12,8 +12,7 @@ const sceneClasses = [
     CowfolkScene,
     WheelScene,
     TouchingCirclesScene,
-    CircleTriangleScene,
-    BezierTestScene
+    CircleTriangleScene
 ] 
 
 
