@@ -1,7 +1,4 @@
 canvas {
-    box-sizing: content-box;
-    border: .125rem solid black;
-
     height: 30vw;
     min-height: 150px;
     width: 30vw;
