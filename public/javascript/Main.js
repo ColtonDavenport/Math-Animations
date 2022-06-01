@@ -3,7 +3,7 @@ import {WheelScene} from "./Wheel.js"
 import {BezierCurve, Box} from "./UtilityClasses.js"
 import {TouchingCirclesScene} from './TouchingCircles.js'
 import {CircleTriangleScene} from './CircleTriangle.js'
-import {BezierTestScene} from './BezierTest.js'
+//import {BezierTestScene} from './BezierTest.js'
 
 const SCENE_HEIGHT = 500
 const SCENE_WIDTH = 500
