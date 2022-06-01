@@ -1,10 +1,1 @@
-canvas {
-    height: calc(100vw - 20px);
-    width: calc(100vw - 20px);
-    margin: 10px;
-}
 
-@media only screen and (min-width: 680px) {
-    height: 30vw;
-    width: 30vw;
-}
