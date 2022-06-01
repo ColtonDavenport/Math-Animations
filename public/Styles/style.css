@@ -1,6 +1,7 @@
 canvas {
-    height: 500px;
-    width: 500px;
+    height: calc(100vw - 20px);
+    width: calc(100vw - 20px);
+    margin: 10px;
 }
 
 @media only screen and (min-width: 680px) {
